@@ -6,7 +6,7 @@
   "States": {
     "get-job-parameters": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:175908995626:function:electroniz_pipeline",
+      "Resource": "arn:aws:lambda:us-east-1:175908995626:function:electroniz_pipeline_parameters",
       "ResultPath": "$",
       "Next": "silver_layer_job"
     },
@@ -35,6 +35,70 @@
           "--enable-glue-datacatalog.$": "$.enable-glue-datacatalog"
         }
       },
+      "Next": "Parallel"
+    },
+    "Parallel": {
+      "Type": "Parallel",
+      "Branches": [
+        {
+          "StartAt": "gold_layer_job_drop_aggregated_store_sales_by_quarter",
+          "States": {
+            "gold_layer_job_drop_aggregated_store_sales_by_quarter": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
+              "Parameters": {
+                "QueryString": "DROP TABLE IF EXISTS electroniz_aggregated.aggregated_store_sales_by_quarter",
+                "WorkGroup": "primary",
+                "ResultConfiguration": {
+                  "OutputLocation": "s3://aws-analytics-course/temp/"
+                }
+              },
+              "Next": "gold_layer_job_create_aggregated_store_sales_by_quarter"
+            },
+            "gold_layer_job_create_aggregated_store_sales_by_quarter": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
+              "Parameters": {
+                "QueryString": "CREATE TABLE \"electroniz_aggregated\".\"aggregated_store_sales_by_quarter\" AS (SELECT YEAR(order_date) AS year, QUARTER(order_date) as quarter, round(sum(sale_price_usd),2) as aggregated_sales_price FROM \"electroniz_curated\".\"store_orders\" GROUP BY YEAR(order_date), QUARTER(order_date))",
+                "WorkGroup": "primary",
+                "ResultConfiguration": {
+                  "OutputLocation": "s3://aws-analytics-course/temp/"
+                }
+              },
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "gold_layer_job_drop_webhits_by_country",
+          "States": {
+            "gold_layer_job_drop_webhits_by_country": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
+              "Parameters": {
+                "QueryString": "DROP TABLE IF EXISTS electroniz_aggregated.webhits_by_country",
+                "WorkGroup": "primary",
+                "ResultConfiguration": {
+                  "OutputLocation": "s3://aws-analytics-course/temp/"
+                }
+              },
+              "Next": "gold_layer_job_create_webhits_by_country"
+            },
+            "gold_layer_job_create_webhits_by_country": {
+              "Type": "Task",
+              "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
+              "Parameters": {
+                "QueryString": "CREATE TABLE \"electroniz_aggregated\".\"webhits_by_country\" AS (SELECT country_name, count(*) AS hits FROM \"electroniz_curated\".\"ecommerce_country\" GROUP BY country_name HAVING count(*) > 1000)",
+                "WorkGroup": "primary",
+                "ResultConfiguration": {
+                  "OutputLocation": "s3://aws-analytics-course/temp/"
+                }
+              },
+              "End": true
+            }
+          }
+        }
+      ],
       "End": true
     }
   }
