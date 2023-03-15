@@ -6,10 +6,10 @@
   "States": {
     "get-job-parameters": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:175908995626:function:electroniz_pipeline_parameters",
+      "Resource": "arn:aws:lambda:us-east-1:175908995626:function:electroniz_pipeline",
       "ResultPath": "$",
       "Next": "silver_layer_job"
-      },
+    },
     "silver_layer_job": {
       "Type": "Task",
       "Resource": "arn:aws:states:::glue:startJobRun.sync",
@@ -17,22 +17,22 @@
       "Parameters": {
         "JobName": "silver_layer_job",
         "Arguments": {
-		  "--S3_BUCKET.$":"$.S3_BUCKET",
-          "--BRONZE_LAYER_NAMESPACE":"$.BRONZE_LAYER_NAMESPACE", 
-          "--BRONZE_LAYER_ECOMMERCE_NAMESPACE":"$.BRONZE_LAYER_ECOMMERCE_NAMESPACE",
-          "--SILVER_LAYER_NAMESPACE":"$.SILVER_LAYER_NAMESPACE", 
-          "--JOB_DATE":"$.JOB_DATE",
-          "--TABLES":"$.TABLES",
-          "--JOIN_COLUMNS_DELTA":"$.JOIN_COLUMNS_DELTA",
-          "--JOIN_COLUMNS_INCREMENTAL":"$.JOIN_COLUMNS_INCREMENTAL",
-          "--CURRENCY_CONVERSION_URL":"$.CURRENCY_CONVERSION_URL",
-          "--ECOMMERCE_LOGS_BUCKET":"$.ECOMMERCE_LOGS_BUCKET",
-          "--ECOMMERCE_STREAM_DATE":"$.ECOMMERCE_STREAM_DATE",
-          "--GLUE_SILVER_DATABASE":"$.GLUE_SILVER_DATABASE",
-          "--datalake-formats":"$.datalake-formats",
-		  "--job-language":"$.job-language",
-          "--TempDir":"$.TempDir", 
-          "--enable-glue-datacatalog":"$.enable-glue-datacatalog"
+          "--S3_BUCKET.$": "$.S3_BUCKET",
+          "--BRONZE_LAYER_NAMESPACE.$": "$.BRONZE_LAYER_NAMESPACE",
+          "--BRONZE_LAYER_ECOMMERCE_NAMESPACE.$": "$.BRONZE_LAYER_ECOMMERCE_NAMESPACE",
+          "--SILVER_LAYER_NAMESPACE.$": "$.SILVER_LAYER_NAMESPACE",
+          "--JOB_DATE.$": "$.JOB_DATE",
+          "--TABLES.$": "$.TABLES",
+          "--JOIN_COLUMNS_DELTA.$": "$.JOIN_COLUMNS_DELTA",
+          "--JOIN_COLUMNS_INCREMENTAL.$": "$.JOIN_COLUMNS_INCREMENTAL",
+          "--CURRENCY_CONVERSION_URL.$": "$.CURRENCY_CONVERSION_URL",
+          "--ECOMMERCE_LOGS_BUCKET.$": "$.ECOMMERCE_LOGS_BUCKET",
+          "--ECOMMERCE_STREAM_DATE.$": "$.ECOMMERCE_STREAM_DATE",
+          "--GLUE_SILVER_DATABASE.$": "$.GLUE_SILVER_DATABASE",
+          "--datalake-formats.$": "$.datalake-formats",
+          "--job-language.$": "$.job-language",
+          "--TempDir.$": "$.TempDir",
+          "--enable-glue-datacatalog.$": "$.enable-glue-datacatalog"
         }
       },
       "End": true
